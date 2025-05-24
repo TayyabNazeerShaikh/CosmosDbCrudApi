@@ -15,7 +15,7 @@ public class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
-        
+
         // Configure Cosmos DB Client and Service
         builder.Services.AddSingleton<ICosmosDbService>(serviceProvider =>
         {
@@ -29,7 +29,7 @@ public class Program
             {
                 throw new InvalidOperationException("Cosmos DB configuration is missing or incomplete.");
             }
-    
+
             // For emulator, allow insecure connections
             var cosmosClientOptions = new CosmosClientOptions
             {
@@ -45,20 +45,20 @@ public class Program
             };
 
             var cosmosClient = new CosmosClient(endpointUri, primaryKey, cosmosClientOptions);
-    
+
             // Ensure Database and Container exist (run this once during startup)
             // This is a blocking call, consider moving to a hosted service for production
             // or ensure it's handled gracefully.
             Database database = cosmosClient.CreateDatabaseIfNotExistsAsync(databaseName).GetAwaiter().GetResult();
             database.CreateContainerIfNotExistsAsync(
-                containerName, 
+                containerName,
                 "/partitionKey", // Define the partition key path
                 throughput: 400   // Minimum throughput
             ).GetAwaiter().GetResult();
 
             return new CosmosDbService(cosmosClient, configuration);
         });
-        
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -71,7 +71,6 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
-
 
         app.MapControllers();
 
